@@ -307,30 +307,3 @@ po2rmd <- function(rmdfile, lang = "fr", podir = "po",
 
   file.path(rmddir, rmd2file)
 }
-
-# Usage:
-# 1. Define the path for md2po and po2md programs
-options(mdpodir = "~/miniconda3/bin")
-# or for Windows
-#options(mdpodir = "E:/program/Python/Python38/Scripts")
-
-# 2. Indicate the directory where the vignettes reside (absolute or relative)
-vigdir <- "data.table/vignettes" # Suppose that the current dir is rfrench
-vigdir <- normalizePath(vigdir) # Absolute path (required by md2po and po2md)
-
-# 3. Translate the vignettes
-
-## datatable-intro.Rmd
-#rmd2po(file.path(vigdir, "datatable-intro.Rmd"), verbose = TRUE, , keep.tmpfile = TRUE)
-# Translate strings using poEdit, then...
-#po2rmd(file.path(vigdir, "datatable-intro.Rmd"), verbose = TRUE)
-
-## datatable-sd-usage.Rmd
-#rmd2po(file.path(vigdir, "datatable-sd-usage.Rmd"), verbose = TRUE, , keep.tmpfile = TRUE)
-# Translate strings using poEdit, then...
-#po2rmd(file.path(vigdir, "datatable-sd-usage.Rmd"), verbose = TRUE)
-
-## datatable-secondary-indices-and-auto-indexing.Rmd
-#rmd2po(file.path(vigdir, "datatable-secondary-indices-and-auto-indexing.Rmd"), verbose = TRUE, , keep.tmpfile = TRUE)
-# Translate strings using poEdit, then...
-#po2rmd(file.path(vigdir, "datatable-secondary-indices-and-auto-indexing.Rmd"), verbose = TRUE)
