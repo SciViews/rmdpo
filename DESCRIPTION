@@ -1,0 +1,33 @@
+Package: rmdpo
+Type: Package
+Version: 0.1.0
+Title: Translate R Markdown and Quarto documents using poEdit
+Description: Extract each block of an R Markdown or Quarto document into a
+  translatable string in .po format (editable in poEdit, or transferred into
+  other translation tools). Once the strings are translated, build the
+  translated version of the initial document in the same R Markdown or Quarto
+  format.
+Authors@R: c(
+  person("Philippe", "Grosjean", role = c("aut", "cre"),
+    email = "phgrosjean@sciviews.org",
+    comment = c(ORCID = "0000-0002-2694-9471")),
+  person("Chritian", "Wiat", role = c("aut"),
+    email = "w9204-r@yahoo.com"))
+Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
+Depends:
+    R (>= 4.2.0)
+Suggests: 
+    knitr,
+    rmarkdown,
+    spelling,
+    testthat (>= 3.0.0)
+License: MIT + file LICENSE
+URL: https://github.com/SciViews/rmdpo, https://www.sciviews.org/rmdpo/
+BugReports: https://github.com/SciViews/rmdpo/issues
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+VignetteBuilder: knitr
+Encoding: UTF-8
+Language: en-US
+ByteCompile: yes
+Config/testthat/edition: 3
