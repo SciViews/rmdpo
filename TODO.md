@@ -1,5 +1,6 @@
 # rmdpo - To Do list
 
+- Make copies of old files before overwriting them
 - Add an example vignette underlining various key points
 - Allow for a different directory (e.g., data.table -> data.table.fr)
 - Check on Windows, macOS & Linux, especially https://github.com/mondeja/md-ulb-pwrap/issues/7

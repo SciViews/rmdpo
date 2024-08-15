@@ -4,7 +4,7 @@
 \name{rmdpo-package}
 \alias{rmdpo}
 \alias{rmdpo-package}
-\title{rmdpo: Translate R Markdown and Quarto documents using poEdit}
+\title{rmdpo: Translate 'R Markdown' and 'Quarto' Documents Using 'poEdit'}
 \description{
 Extract each block of an R Markdown or Quarto document into a translatable string in .po format (editable in poEdit, or transferred into other translation tools). Once the strings are translated, build the translated version of the initial document in the same R Markdown or Quarto format.
 }

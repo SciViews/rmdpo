@@ -39,8 +39,16 @@
   # 1) The YAML header
   # 2) chunks with options like {r, echo=FALSE}
   # 3) List items with empty lines between items (list items are transformed
-  #    into plain paragraphs to avoid this)
+  #    into plain paragraphs to avoid this). For unknown reasons, po2md
+  #    eliminates equations tags ($...$) in such lists => escape them by
+  #    replacing $ by $$$ in list items
   # 4) Indentation using tabulations, to be replaced by four spaces
+  # 5) md2po adds footnotes a second time at the en of the .po file with a
+  #    traduction that is identical to the original strings. To avoid this, we
+  #    flag the end of the file and will delete anything past this flag in the
+  #    .po file as a workaround
+  # 6) Display equations (equations on its own line) is not correctly handled
+  #    by po2md and the $...$ tags disappear. So, we escape them by `$$$...$$$`
   # So, we change these to something that can be easily reversed on the
   # translated version to restore these Rmd/qmd features
   # This is done in a temporary file
@@ -62,32 +70,66 @@
   rmddata <- sub("^=====(    )", "=====_", rmddata)
   rmddata <- sub("^=====_(    )", "=====__", rmddata)
   rmddata <- sub("^=====__(    )", "=====___", rmddata)
+  # Escape $...$ that po2md eliminates sometines by $$$...$$$,
+  # but only in escaped list items
+  is_escaped_list <- grepl("^=====.*=====$", rmddata)
+  rmddata[is_escaped_list] <- gsub("\\$", "$$$", rmddata[is_escaped_list])
   # 4) Indentation with tabulations (up to three levels)
   rmddata <- gsub("^\t\t\t", "            ", rmddata)
   rmddata <- gsub("^\t\t", "        ", rmddata)
   rmddata <- gsub("^\t", "    ", rmddata)
+  # 5) Flag the end of the file
+  rmddata <- c(rmddata, "\n\n=====END=====")
+  # 6) Escape equations tags in display equations
+  rmddata <- sub("^( *)\\$(.+)\\$ *$", "\\1`$$$\\2$$$`", rmddata)
 
   writeLines(rmddata, tmpfile)
   invisible(tmpfile)
+}
+
+.cut_after_end <- function(data) {
+  # Cut the .po/.Rmd/.qmd file at the "=====END=====" flag
+  # (workaround for a bug in md2po and po2md that inject a second time the
+  # footnotes at the end of the .po file)
+  endflag <- (1:length(data))[grep("=====END=====", data)]
+  if (!length(endflag))
+    return(data) # Nothing to do, no end flag found
+  # We must cut the file two lines above the first occurrence of that tag
+  # (for .po file, there is one entry before it)
+  data <- data[1:(endflag[1] - 2)]
+  data
 }
 
 .postprocess_translated_rmd <- function(rmdfile) {
   # We have to rework a little bit the produced .Rmd/.qmd file to make sure
   # the YAML header, the R chunks headers and list items are correct
   rmddata <- readLines(rmdfile)
-  # Restore the YAML header markers
+
+  # 1) Restore YAML header
   rmddata <- sub("~~~", "---", rmddata, fixed = TRUE)
-  # Restore the R chunks headers
+  # 2) Restore chunks with options
   rmddata <- sub("^( *)#===== (.+)$", "\\1```{\\2}", rmddata)
   rmddata <- rmddata[!grepl("```{chunk_with_args}", rmddata, fixed = TRUE)]
-  # Restore proper spaces before indented list items
+  # 3) Restore list items
+  #    a) if an empty line was missing between previous block and first list
+  #       item, we have to add one now
+  # TODO... how ??? This is wrong: rmddata <- sub("^([^=].*) (=====.*=====)$", "\\1\n\\2", rmddata)
+  #    b) restore proper equation tags $...$ instead of $$$...$$$
+  is_escaped_list <- grepl("=====.*=====$", rmddata)
+  rmddata[is_escaped_list] <- gsub("\\$\\$\\$", "$", rmddata[is_escaped_list])
+  #    c) restore proper spaces before indented list items)
   rmddata <- sub("^=====___", "=====           ", rmddata)
   rmddata <- sub("^=====__", "=====        ", rmddata)
   rmddata <- sub("^=====_", "=====    ", rmddata)
-  # Restore list items
+  #    d) restore list items
   rmddata <- sub("^=====( *[-+*] *.+)=====$", "\\1", rmddata)
   rmddata <- sub("^=====( *[0-9]+[.)] *.+)=====$", "\\1", rmddata)
   rmddata <- gsub("===== =====", "\n", rmddata, fixed = TRUE)
+  # 4) Tabs replaced by four spaces at the beginning of lines -> keep them
+  # 5) Remove the "=====END=====" flag and what is after it
+  rmddata <- .cut_after_end(rmddata)
+  # 6) Remove escape codes for display equations
+  rmddata <- sub("^( *)`\\$\\$\\$(.+)\\$\\$\\$`$", "\\1$\\2$", rmddata)
 
   # This is not needed any more with the wrapping of list items within =====
   # Kept here commented for reference
@@ -250,6 +292,8 @@ rmd2po <- function(rmdfile, lang = "fr", podir = "po",
     error = function(e) stop(e, call. = FALSE))
   if (isTRUE(verbose))
     message(res)
+  # Cut any unnecessary parts in the .po file
+  writeLines(.cut_after_end(readLines(pofile)), pofile)
 
   if (!isTRUE(keep.tmpfile))
     unlink(tmpfile)
