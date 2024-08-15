@@ -40,6 +40,7 @@
   # 2) chunks with options like {r, echo=FALSE}
   # 3) List items with empty lines between items (list items are transformed
   #    into plain paragraphs to avoid this)
+  # 4) Indentation using tabulations, to be replaced by four spaces
   # So, we change these to something that can be easily reversed on the
   # translated version to restore these Rmd/qmd features
   # This is done in a temporary file
@@ -47,9 +48,13 @@
   # the temporary file in the "lang" subdirectory
 
   rmddata <- readLines(rmdfile)
+
+  # 1) YAML header
   rmddata <- sub("^---$", "~~~", rmddata)
+  # 2) R chunks with options
   rmddata <- sub("^( *)```\\{([a-zA-Z]+[ ,][^}]+)\\}$",
     "\\1```{chunk_with_args}\n\\1#===== \\2", rmddata)
+  # 3) List items
   rmddata <- sub("^( *[-+*] +.+)$", "=====\\1=====", rmddata)
   rmddata <- sub("^( *[0-9]+[.)] +.+)$", "=====\\1=====", rmddata)
   # Because mdpo squeezes multiple spaces into one, we replace them with _
@@ -57,6 +62,11 @@
   rmddata <- sub("^=====(    )", "=====_", rmddata)
   rmddata <- sub("^=====_(    )", "=====__", rmddata)
   rmddata <- sub("^=====__(    )", "=====___", rmddata)
+  # 4) Indentation with tabulations (up to three levels)
+  rmddata <- gsub("^\t\t\t", "            ", rmddata)
+  rmddata <- gsub("^\t\t", "        ", rmddata)
+  rmddata <- gsub("^\t", "    ", rmddata)
+
   writeLines(rmddata, tmpfile)
   invisible(tmpfile)
 }
